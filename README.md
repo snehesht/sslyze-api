@@ -1,6 +1,6 @@
-## sslyze_pi
+## sslyze_api
 
-API Endpoint for [github.com/nabla-c0d3/sslyze](https://github.com/nabla-c0d3/sslyze) written in Python/Flask
+API Endpoint for [github.com/nabla-c0d3/sslyze](https://github.com/nabla-c0d3/sslyze) written in Python/Flask and Celery
 
 ### Usage
 
@@ -26,6 +26,7 @@ Install Python v2.7+ and pip before proceeding further
 - Flask
 - sslyze
 - celery
+- billiard
 - sqlalchemy
 - sqlite3
 - gunicorn
