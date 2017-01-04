@@ -3,20 +3,15 @@ from sslyze_api.models import User
 from sslyze_api.database import db_session
 from sslyze_api.utils import auth_required
 from sslyze_api import celery_app
-from subprocess import Popen, PIPE
 import ujson as json
 from flask import jsonify, request
-
-
-"""
+from sslyze_api.tasks import scan, scan_cli
 
 
 
-"""
-
-# Create New User
 @app.route('/api/user/new', methods = ['POST'])
 def create_new_user():
+    """ Create new user account """
 
     # Add an app.supersecret token to validate user creation
     # ToDo
@@ -40,10 +35,12 @@ def create_new_user():
             return jsonify({'username':new_user.username,
                 'created':new_user.created, 'token':new_user.token,'status':'Success'})
 
-# Get User Token
+
 @app.route('/api/user/token',methods=['GET'])
 @auth_required
 def get_user_token():
+    """ Get user token after authenticating them with username/password """
+
     username = request.args.get('username')
     password = request.args.get('password')
     curr_user = User.query.filter_by(username=username).first()
@@ -57,26 +54,31 @@ def get_user_token():
         return jsonify({'status':'Failed', 'msg':'User does not exist'})
 
 
-
-# returns result in json
-@celery_app.task
-def scan(hostname, port):
-    cmd = ['python','-m','sslyze','--regular',hostname+':'+str(port), '--json_out=-']
-    proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
-    out, err = proc.communicate()
-    return json.loads(out)
-
 # Requires Auth
-# Scan Host:Port
+# Debug Scan from shell
+@app.route('/api/debug/scan', methods=['GET'])
+@auth_required
+def debug_scan_from_shell():
+    host = request.args.get('host')
+    port = request.args.get('port') or 443 # Default to 443, if port=None
+    resp = scan_cli.delay(host,port)
+    while resp.ready() == False:
+        pass
+    return jsonify(resp.result)
+
+
 @app.route('/api/scan', methods=['GET'])
 @auth_required
 def scan_host():
     host = request.args.get('host')
     port = request.args.get('port') or 443 # Default to 443, if port=None
-    resp = scan.delay(host,port)
-    while resp.ready() == False:
-        pass
-    return jsonify(resp.result)
+    if host != None:
+        resp = scan.delay(host,port)
+        while resp.ready() == False:
+            pass
+        return jsonify(resp.result)
+    else:
+        return jsonify({'status':'Failed','msg':'Valid hostname required'})
 
 # Index API Page
 @app.route('/api', methods=['GET'])
