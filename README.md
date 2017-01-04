@@ -1,6 +1,11 @@
 ## sslyze_api
 
+_**TL;DR**_
+
 API Endpoint for [github.com/nabla-c0d3/sslyze](https://github.com/nabla-c0d3/sslyze) written in Python/Flask and Celery
+
+[![asciicast](https://asciinema.org/a/03z2qxo5yaqe9283nqwil12jx.png)](https://asciinema.org/a/03z2qxo5yaqe9283nqwil12jx)
+
 
 ### Usage
 
